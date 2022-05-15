@@ -6,6 +6,24 @@ variable "key_pair" {
   default     = "win-lab"
 }
 
+variable "aws_profile" {
+  description = "AWS Profile"
+  type        = string
+  default     = "default"
+}
+
+variable "aws_region" {
+  description = "AWS Region"
+  type        = string
+  default     = "us-west-2"
+}
+
+variable "aws_az" {
+  description = "AWS AZ"
+  type        = string
+  default     = "us-west-2a"
+}
+
 ## Networking
 # Set VPC CIDR
 variable "vpc_cidr" {

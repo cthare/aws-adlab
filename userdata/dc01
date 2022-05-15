@@ -6,6 +6,6 @@
     choco install -y git
 
     # Setup powershell launch scripts
-    & 'C:\Program Files\Git\bin\git.exe' clone https://github.com/cthare/testEnv.git C:\temp
+    & 'C:\Program Files\Git\bin\git.exe' clone https://github.com/cthare/aws-adlab-powershell.git C:\temp
     & 'C:\Temp\installAD.ps1'
 </powershell>

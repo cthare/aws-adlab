@@ -10,8 +10,8 @@ terraform {
 }
 
 provider "aws" {
-  profile = "default"
-  region  = "us-west-2"
+  profile = var.aws_profile
+  region  = var.aws_region
 }
 
 ### Network Setup ###
@@ -38,7 +38,7 @@ resource "aws_subnet" "adlab_sn" {
   vpc_id =  aws_vpc.adlab_vpc.id
   cidr_block = var.adlab_sn
   map_public_ip_on_launch = "true"
-  availability_zone = "us-west-2a"
+  availability_zone = var.aws_az
 
   tags = {
     Name = "adlab_sn"
@@ -57,9 +57,12 @@ resource "aws_default_route_table" "adlab_route_table" {
     }
 }
 
+# General SG for Now
 resource "aws_security_group" "web_sg" {
   name = "web_sg"
   vpc_id =  aws_vpc.adlab_vpc.id
+  
+  # RDP access from current IP
   ingress {
     from_port   = 3389
     to_port     = 3389
@@ -67,6 +70,7 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = ["${chomp(data.http.myip.body)}/32"]
   }
 
+  # Interconnectivity within subnet
   ingress {
     from_port   = 0
     to_port     = 0
@@ -74,11 +78,20 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = var.adlab_win_sn
   }
 
+  # Access to Linux via Instance Connect
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = var.instance_connect_ips
+  }
+
+  # Direct access to Jenkins instances
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.myip.body)}/32"]
   }
 
   egress {
