@@ -1,10 +1,10 @@
 # General Setup
-# Set Key Pair
-variable "key_pair" {
-  description = "Key Pair Name"
-  type        = string
-  default     = "win-lab"
-}
+# Set Key Pair - uncomment this section to set key pair if needed
+#variable "key_pair" {
+#  description = "Key Pair Name"
+#  type        = string
+#  default     = "win-lab"
+#}
 
 variable "aws_profile" {
   description = "AWS Profile"

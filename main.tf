@@ -1,3 +1,4 @@
+### Prereqs ###
 terraform {
   required_providers {
     aws = {
@@ -13,6 +14,32 @@ provider "aws" {
   profile = var.aws_profile
   region  = var.aws_region
 }
+
+### IAM ###
+
+# Roles and policies to access secrets
+resource "aws_iam_role" "ec2_secrets_access_role" {
+  name               = "ec2_secrets_access"
+  assume_role_policy = "${file("iampolicies/ec2AssumeRole.json")}"
+}
+
+resource "aws_iam_policy" "adlab_secrets" {
+  name        = "adlab_secrets"
+  description = "Access to secrets"
+  policy      = "${file("iampolicies/readSecrets.json")}"
+}
+
+resource "aws_iam_policy_attachment" "ec2_adlab_attachment" {
+  name       = "ec2_adlab_attachment"
+  roles      = ["${aws_iam_role.ec2_secrets_access_role.name}"]
+  policy_arn = "${aws_iam_policy.adlab_secrets.arn}"
+}
+
+resource "aws_iam_instance_profile" "adlab_secrets_profile" {
+  name  = "adlab_secrets_profile"
+  role = "${aws_iam_role.ec2_secrets_access_role.name}"
+}
+
 
 ### Network Setup ###
 resource "aws_vpc" "adlab_vpc" {
@@ -118,7 +145,9 @@ resource "aws_network_interface" "adlab_dc01_nic" {
 resource "aws_instance" "adlab_dc01" {
   ami           = data.aws_ami.win2019.id
   instance_type = "t2.micro"
-  key_name      = var.key_pair
+  iam_instance_profile = "${aws_iam_instance_profile.adlab_secrets_profile.name}"
+  #key_name      = var.key_pair
+  
   
   network_interface {
     network_interface_id = aws_network_interface.adlab_dc01_nic.id
@@ -136,8 +165,9 @@ resource "aws_instance" "adlab_dc01" {
 resource "aws_instance" "adlab_gen01" {
   ami           = data.aws_ami.win2019.id
   instance_type = "t2.micro"
+  iam_instance_profile = "${aws_iam_instance_profile.adlab_secrets_profile.name}"
   subnet_id   = aws_subnet.adlab_sn.id
-  key_name      = var.key_pair
+  #key_name      = var.key_pair
   security_groups = [aws_security_group.web_sg.id]
 
   user_data     = "${file("userdata/gen01")}"
@@ -152,7 +182,7 @@ resource "aws_instance" "jenkins" {
   ami           = data.aws_ami.awsLinux.id
   instance_type = "t2.micro"
   subnet_id   = aws_subnet.adlab_sn.id
-  key_name      = var.key_pair
+  #key_name      = var.key_pair
   security_groups = [aws_security_group.web_sg.id]
 
   user_data     = "${file("userdata/jenkins")}"
