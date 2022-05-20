@@ -85,8 +85,8 @@ resource "aws_default_route_table" "adlab_route_table" {
 }
 
 # General SG for Now
-resource "aws_security_group" "web_sg" {
-  name = "web_sg"
+resource "aws_security_group" "adlab_default_sg" {
+  name = "adlab_default_sg"
   vpc_id =  aws_vpc.adlab_vpc.id
   
   # RDP access from current IP
@@ -105,22 +105,6 @@ resource "aws_security_group" "web_sg" {
     cidr_blocks = var.adlab_win_sn
   }
 
-  # Access to Linux via Instance Connect
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = var.instance_connect_ips
-  }
-
-  # Direct access to Jenkins instances
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["${chomp(data.http.myip.body)}/32"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -129,12 +113,13 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
+
 ## EC2 Instance Setup ##
 
 resource "aws_network_interface" "adlab_dc01_nic" {
   subnet_id   = aws_subnet.adlab_sn.id
   private_ips = ["10.10.10.10"]
-  security_groups = [aws_security_group.web_sg.id]
+  security_groups = [aws_security_group.adlab_default_sg.id]
 
   tags = {
     Name = "primary_network_interface"
@@ -168,7 +153,7 @@ resource "aws_instance" "adlab_gen01" {
   iam_instance_profile = "${aws_iam_instance_profile.adlab_secrets_profile.name}"
   subnet_id   = aws_subnet.adlab_sn.id
   #key_name      = var.key_pair
-  security_groups = [aws_security_group.web_sg.id]
+  security_groups = [aws_security_group.adlab_default_sg.id]
 
   user_data     = "${file("userdata/gen01")}"
 
@@ -177,17 +162,13 @@ resource "aws_instance" "adlab_gen01" {
   }
 }
 
-# Domain Member Server
-resource "aws_instance" "jenkins" {
-  ami           = data.aws_ami.awsLinux.id
-  instance_type = "t2.micro"
-  subnet_id   = aws_subnet.adlab_sn.id
-  #key_name      = var.key_pair
-  security_groups = [aws_security_group.web_sg.id]
+# Jenkins Environment
+module "jenkins" {
+  source        = "./jenkins"
 
-  user_data     = "${file("userdata/jenkins")}"
+  root_vpc      = aws_vpc.adlab_vpc
+  root_sn       = aws_subnet.adlab_sn
+  root_sn_cidr  = var.adlab_win_sn
+  iam_profile   = aws_iam_instance_profile.adlab_secrets_profile.name
 
-  tags = {
-    Name = "jenkins"
-  }
 }
