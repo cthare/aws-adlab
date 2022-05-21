@@ -2,10 +2,12 @@
     # Install Chocolatey
     Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    # Install git
+    # Install git / JRE / .Net
     choco install -y git
+    choco install -y javaruntime
+    Add-WindowsCapability -Online -Name NetFx3~~~~
 
     # Setup powershell launch scripts
     & 'C:\Program Files\Git\bin\git.exe' clone https://github.com/cthare/aws-adlab-powershell.git C:\temp
-    & 'C:\Temp\setupJenkins.ps1'
+    & 'C:\Temp\jenkins\setupJenkins.ps1'
 </powershell>

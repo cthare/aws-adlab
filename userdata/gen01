@@ -10,5 +10,5 @@
 
     # Setup powershell launch scripts
     & 'C:\Program Files\Git\bin\git.exe' clone https://github.com/cthare/aws-adlab-powershell.git C:\temp
-    & 'C:\Temp\setupGeneric.ps1'
+    & 'C:\Temp\general\setupGeneric.ps1'
 </powershell>
