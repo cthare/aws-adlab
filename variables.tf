@@ -33,17 +33,38 @@ variable "vpc_cidr" {
 }
 
 # Set Subnet CIDR for creation
-variable "adlab_sn" {
+variable "adlab_sn_pr1" {
   description = "adlab Subnet CIDR"
   type        = string
   default     = "10.10.10.0/24"
+}
+
+# Set Subnet CIDR for creation
+variable "adlab_sn_pr2" {
+  description = "adlab Subnet CIDR"
+  type        = string
+  default     = "10.10.11.0/24"
+}
+
+# Set Subnet CIDR for creation
+variable "adlab_sn_pub1" {
+  description = "adlab Subnet CIDR"
+  type        = string
+  default     = "10.10.20.0/24"
+}
+
+# Set Subnet CIDR for creation
+variable "adlab_sn_pub2" {
+  description = "adlab Subnet CIDR"
+  type        = string
+  default     = "10.10.21.0/24"
 }
 
 # Set Subnet CIDR for SG
 variable "adlab_win_sn" {
   description = "adlab Subnet CIDR"
   type        = list(string)
-  default     = ["10.10.10.0/24"]
+  default     = ["10.10.10.0/24", "10.10.11.0/24", "10.10.20.0/24", "10.10.21.0/24"]
 }
 
 # Set to "My IP" for Services like RDP / SSH
