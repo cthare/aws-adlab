@@ -1,29 +1,9 @@
-# General Setup
-# Set Key Pair - uncomment this section to set key pair if needed
-#variable "key_pair" {
-#  description = "Key Pair Name"
-#  type        = string
-#  default     = "win-lab"
-#}
-
-variable "aws_profile" {
-  description = "AWS Profile"
-  type        = string
-  default     = "default"
-}
-
-variable "aws_region" {
-  description = "AWS Region"
-  type        = string
-  default     = "us-west-2"
-}
-
 variable "aws_az" {
   description = "AWS AZ"
   type        = string
   default     = "us-west-2a"
 }
-/*
+
 ## Networking
 # Set VPC CIDR
 variable "vpc_cidr" {
@@ -76,25 +56,4 @@ variable "instance_connect_ips" {
   description = "AWS instance connect IPs (US)"
   type        = list(string)
   default     = ["18.206.107.24/29", "3.16.146.0/29", "13.52.6.112/29", "18.237.140.160/29"]
-}
-*/
-# Instances
-# Get latest Windows Server 2019 AMI
-data "aws_ami" "win2019" {
-  most_recent = true
-  owners      = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["Windows_Server-2019-English-Full-Base*"]
-  }
-}
-
-# Get latest Amazon Linux AMI
-data "aws_ami" "awsLinux" {
-  most_recent = true
-  owners      = ["amazon"]
-  filter {
-    name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs*"]
-  }
 }

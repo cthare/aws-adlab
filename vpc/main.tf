@@ -1,46 +1,3 @@
-### Prereqs ###
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.27"
-    }
-  }
-
-  required_version = ">= 0.14.9"
-}
-
-provider "aws" {
-  profile = var.aws_profile
-  region  = var.aws_region
-}
-
-### IAM ###
-
-# Roles and policies to access secrets
-resource "aws_iam_role" "ec2_secrets_access_role" {
-  name               = "ec2_secrets_access"
-  assume_role_policy = "${file("iampolicies/ec2AssumeRole.json")}"
-}
-
-resource "aws_iam_policy" "adlab_secrets" {
-  name        = "adlab_secrets"
-  description = "Access to secrets"
-  policy      = "${file("iampolicies/readSecrets.json")}"
-}
-
-resource "aws_iam_policy_attachment" "ec2_adlab_attachment" {
-  name       = "ec2_adlab_attachment"
-  roles      = ["${aws_iam_role.ec2_secrets_access_role.name}"]
-  policy_arn = "${aws_iam_policy.adlab_secrets.arn}"
-}
-
-resource "aws_iam_instance_profile" "adlab_secrets_profile" {
-  name  = "adlab_secrets_profile"
-  role = "${aws_iam_role.ec2_secrets_access_role.name}"
-}
-
-/*
 ### Network Setup ###
 resource "aws_vpc" "adlab_vpc" {
   cidr_block       = var.vpc_cidr
@@ -222,17 +179,7 @@ resource "aws_security_group" "adlab_default_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-*/
 
-# Jenkins Environment
-module "vpc" {
-  source        = "./vpc"
-
-  aws_az = var.aws_az
-}
-
-## EC2 Instance Setup ##
-/*
 resource "aws_network_interface" "adlab_dc01_nic" {
   subnet_id   = aws_subnet.adlab_sn_pr1.id
   private_ips = ["10.10.10.10"]
@@ -242,53 +189,28 @@ resource "aws_network_interface" "adlab_dc01_nic" {
     Name = "primary_network_interface"
   }
 }
-*/
-# Domain Controller
-resource "aws_instance" "adlab_dc01" {
-  ami           = data.aws_ami.win2019.id
-  instance_type = "t2.micro"
-  iam_instance_profile = "${aws_iam_instance_profile.adlab_secrets_profile.name}"
-  #key_name      = var.key_pair
-  
-  
-  network_interface {
-    network_interface_id = module.vpc.dc01_nic_id
-    device_index         = 0
-  }
 
-  user_data     = "${file("userdata/dc01")}"
 
-  tags = {
-    Name = "adlab_dc01"
-  }
+output dc01_nic_id {
+    value = aws_network_interface.adlab_dc01_nic.id
 }
 
-# Domain Member Server
-resource "aws_instance" "adlab_gen01" {
-  ami           = data.aws_ami.win2019.id
-  instance_type = "t2.micro"
-  iam_instance_profile = "${aws_iam_instance_profile.adlab_secrets_profile.name}"
-  subnet_id   = module.vpc.pub1_id
-  #key_name      = var.key_pair
-  security_groups = [module.vpc.default_sg_id]
-
-  user_data     = "${file("userdata/gen01")}"
-
-  tags = {
-    Name = "adlab_gen01"
-  }
+output pub1_id {
+    value = aws_subnet.adlab_sn_pub1.id
 }
 
-
-# Jenkins Environment
-/*
-module "jenkins" {
-  source        = "./jenkins"
-
-  root_vpc      = aws_vpc.adlab_vpc
-  root_sn       = aws_subnet.adlab_sn_pr2
-  root_sn_cidr  = var.adlab_win_sn
-  iam_profile   = aws_iam_instance_profile.adlab_secrets_profile.name
-
+output pub2_id {
+    value = aws_subnet.adlab_sn_pub2.id
 }
-*/
+
+output pr1_id {
+    value = aws_subnet.adlab_sn_pr1.id
+}
+
+output pr2_id {
+    value = aws_subnet.adlab_sn_pr2.id
+}
+
+output default_sg_id {
+    value = aws_security_group.adlab_default_sg.id
+}
