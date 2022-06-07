@@ -52,7 +52,7 @@ resource "aws_instance" "jenkins_windows" {
   instance_type = "t2.micro"
   iam_instance_profile = var.iam_profile
   subnet_id   = var.root_sn.id
-  security_groups = [aws_security_group.jenkins_sg.id]
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   user_data     = "${file("${path.module}/userdata/jenkins_windows")}"
   
@@ -67,7 +67,7 @@ resource "aws_instance" "jenkins" {
   ami           = data.aws_ami.awsLinux.id
   instance_type = "t2.micro"
   subnet_id   = var.root_sn.id
-  security_groups = [aws_security_group.jenkins_sg.id]
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   user_data     = "${file("${path.module}/userdata/jenkins")}"
 

@@ -84,9 +84,8 @@ resource "aws_instance" "adlab_gen01" {
   }
 }
 
-
+/*
 # Jenkins Environment
-
 module "jenkins" {
   source        = "./jenkins"
 
@@ -96,3 +95,4 @@ module "jenkins" {
   iam_profile   = aws_iam_instance_profile.adlab_secrets_profile.name
 
 }
+*/
